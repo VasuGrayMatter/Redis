@@ -6,12 +6,30 @@ const rateLimiter = require("./middleware/rateLimit");
 const { protect } = require("./middleware/authMiddleware");
 const cors = require('cors');
 const app = express();
+
+const allowedOrigins = [
+  'http://localhost:3000', // local React dev server
+  'https://keen-marshmallow-8449ba.netlify.app' // production frontend
+];
+
 app.use(cors({
-  origin: "https://keen-marshmallow-8449ba.netlify.app"|| '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // allow server-to-server or curl
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('CORS not allowed from this origin: ' + origin));
+  },
   credentials: true
 }));
 
+// app.use(cors({
+//   origin: "http://localhost:5000/api"|| '*',
+//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//   credentials: true
+// }));
+
+// https://keen-marshmallow-8449ba.netlify.app
 
 // DB + Middleware
 connectDB();
